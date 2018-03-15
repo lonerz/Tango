@@ -41,8 +41,21 @@ def unblock(f):
 
     return wrapper
 
+class BaseHandler(tornado.web.RequestHandler):
 
-class MainHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        print("setting headers!!!")
+        print(self.request.headers)
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with, origin, content-type, accept, Filename")
+        self.set_header('Access-Control-Allow-Methods', 'OPTIONS, POST, PUT, DELETE, OPTIONS')
+
+    def options(self):
+        # no body
+        self.set_status(204)
+        self.finish()
+
+class MainHandler(BaseHandler):
 
     @unblock
     def get(self):
@@ -50,15 +63,16 @@ class MainHandler(tornado.web.RequestHandler):
         return ("Hello, world! RESTful Tango here!\n")
 
 
-class OpenHandler(tornado.web.RequestHandler):
+class OpenHandler(BaseHandler):
 
     @unblock
     def get(self, key, courselab):
+        print key, courselab
         """ get - Handles the get request to open."""
         return tangoREST.open(key, courselab)
 
 
-class UploadHandler(tornado.web.RequestHandler):
+class UploadHandler(BaseHandler):
 
     @unblock
     def post(self, key, courselab):
@@ -70,15 +84,17 @@ class UploadHandler(tornado.web.RequestHandler):
             self.request.body)
 
 
-class AddJobHandler(tornado.web.RequestHandler):
+class AddJobHandler(BaseHandler):
 
     @unblock
     def post(self, key, courselab):
         """ post - Handles the post request to add a job."""
+        print("BODDDDDY")
+        print(self.request.body)
         return tangoREST.addJob(key, courselab, self.request.body)
 
 
-class PollHandler(tornado.web.RequestHandler):
+class PollHandler(BaseHandler):
 
     @unblock
     def get(self, key, courselab, outputFile):
@@ -87,7 +103,7 @@ class PollHandler(tornado.web.RequestHandler):
         return tangoREST.poll(key, courselab, urllib.unquote(outputFile))
 
 
-class InfoHandler(tornado.web.RequestHandler):
+class InfoHandler(BaseHandler):
 
     @unblock
     def get(self, key):
@@ -95,14 +111,14 @@ class InfoHandler(tornado.web.RequestHandler):
         return tangoREST.info(key)
 
 
-class JobsHandler(tornado.web.RequestHandler):
+class JobsHandler(BaseHandler):
 
     @unblock
     def get(self, key, deadJobs):
         """ get - Handles the get request to jobs."""
         return tangoREST.jobs(key, deadJobs)
 
-class PoolHandler(tornado.web.RequestHandler):
+class PoolHandler(BaseHandler):
 
     @unblock
     def get(self, key):
@@ -115,7 +131,7 @@ class PoolHandler(tornado.web.RequestHandler):
         return tangoREST.pool(key, image)
 
 
-class PreallocHandler(tornado.web.RequestHandler):
+class PreallocHandler(BaseHandler):
 
     @unblock
     def post(self, key, image, num):
